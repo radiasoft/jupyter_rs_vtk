@@ -49,8 +49,8 @@ class VTK(widgets.DOMWidget, rs_utils.RSDebugger):
         )
 
     def _vtk_displayed(self, o):
-        self.rsdbg('VTK READY')
-        # pass
+        #self.rsdbg('VTK READY')
+        pass
 
     def __init__(self, title='', bg_color='#ffffff', data=None):
         self.model_data = {} if data is None else data
@@ -89,7 +89,7 @@ class Viewer(widgets.VBox, rs_utils.RSDebugger):
     def set_data(self, data):
         # keep a local reference to the data for handlers
         #self.rsdbg('vtk setting data {}'.format(data))
-        self.rsdbg('vtk setting data')
+        #self.rsdbg('vtk setting data')
         self.model_data = data
         self.content.set_data(self.model_data)
         self._update_layout()
@@ -157,7 +157,7 @@ class Viewer(widgets.VBox, rs_utils.RSDebugger):
         # if we have data, this will trigger the refresh on the front end
         # but we need the widget to be ready first
         #self.rsdbg('VIEWER ready data {}'.format(self.model_data))
-        self.rsdbg('VIEWER ready')
+        #self.rsdbg('VIEWER ready')
         self.set_data(self.model_data)
 
     def __init__(self, data=None):

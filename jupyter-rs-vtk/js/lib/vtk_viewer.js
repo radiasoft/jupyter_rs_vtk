@@ -281,7 +281,6 @@ var VTKView = widgets.DOMWidgetView.extend({
     },
 
     handleCustomMessages: function(msg) {
-        //rsUtils.rsdbg('VTKView custom', msg);
         if (msg.type === 'axis') {
             this.setAxis(msg.axis, msg.dir);
         }
@@ -291,7 +290,6 @@ var VTKView = widgets.DOMWidgetView.extend({
         }
 
         if (msg.type === 'refresh') {
-            rsUtils.rsdbg('got refresh message');
             this.refresh();
         }
 
@@ -307,14 +305,12 @@ var VTKView = widgets.DOMWidgetView.extend({
             return;
         }
         const info = this.getInfoForActor(this.getActor(name));
-        rsUtils.rsdbg(name, 'loaded state', s);
         this.setColor(info, info.type, s.color, s.alpha);
         this.fsRenderer.getRenderWindow().render();
     },
 
     loadCam: function() {
         const cs = this.model.get('cam_state');
-        rsUtils.rsdbg('loaded cam state', cs);
         if (! cs || $.isEmptyObject(cs)) {
             this.resetView();
             return;
@@ -330,7 +326,7 @@ var VTKView = widgets.DOMWidgetView.extend({
 
     refresh: function(o) {
 
-        rsUtils.rsdbg('vtk refresh');
+        //rsUtils.rsdbg('vtk refresh');
         const view = this;
 
         this.selectedObject = null;
@@ -361,8 +357,8 @@ var VTKView = widgets.DOMWidgetView.extend({
                 // we may get multiple actors
                 let cid = view.cPicker.getCellId();
                 //rsUtils.rsdbg('Picked pt', point);
-                rsUtils.rsdbg('Picked pt at', 'pid', pid);
-                rsUtils.rsdbg('Picked cell at', 'cid', cid);
+                //rsUtils.rsdbg('Picked pt at', 'pid', pid);
+                //rsUtils.rsdbg('Picked cell at', 'cid', cid);
 
                 // treat pickers separately rather than select one?
                 let picker = cid >= 0 ? view.cPicker : (pid >= 0 ? view.ptPicker : null);
@@ -542,7 +538,7 @@ var VTKView = widgets.DOMWidgetView.extend({
         const name = sceneData.name;
         const id = sceneData.id;
         let data = sceneData.data;
-        rsUtils.rsdbg('got data', data, 'for', name, id);
+        //rsUtils.rsdbg('got data', data, 'for', name, id);
         for (let i = 0; i < data.length; ++i) {
 
             const sceneDatum = data[i];
@@ -598,12 +594,10 @@ var VTKView = widgets.DOMWidgetView.extend({
                 totalBounds[k + 1] = Math.max(totalBounds[k + 1], bounds[k + 1]);
             }
         }
-        //this.resetView();
         this.setBgColor();
         this.setEdgesVisible();
         this.setPolyAlpha();
         this.loadCam();
-        //rsUtils.rsdbg('vtk serialize?', this.model.serialize(this.model));
     },
 
     removeActors: function() {
@@ -618,7 +612,7 @@ var VTKView = widgets.DOMWidgetView.extend({
     },
 
     render: function() {
-        rsUtils.rsdbg('vtk render model', this.model);
+        //rsUtils.rsdbg('vtk render model', this.model);
         this.model.on('change:bg_color', this.setBgColor, this);
         this.model.on('change:selected_obj_color', this.setSelectedObjColor, this);
         this.model.on('change:poly_alpha', this.setPolyAlpha, this);
@@ -702,7 +696,7 @@ var VTKView = widgets.DOMWidgetView.extend({
     },
 
     setData: function(d) {
-        rsUtils.rsdbg('vtk setting data');
+        //rsUtils.rsdbg('vtk setting data');
         this.model.set('model_data', d);
         this.refresh();
     },
@@ -771,7 +765,6 @@ var VTKView = widgets.DOMWidgetView.extend({
             return;
         }
         let info = this.getInfoForActor(this.selectedObject);
-        rsUtils.rsdbg('setSelectedObjColor', info.name);
         let newColor = vtk.Common.Core.vtkMath.hex2float(this.model.get('selected_obj_color'));
         if (! info.scalars) {
             this.selectedObject.getProperty().setColor(newColor[0], newColor[1], newColor[2]);
@@ -872,7 +865,7 @@ var ViewerView = controls.VBoxView.extend({
     },
 
     render: function() {
-        rsUtils.rsdbg('viewer render');
+        //rsUtils.rsdbg('viewer render');
         // this is effectively "super.render()" - must invoke to get all children rendered properly
         controls.VBoxView.prototype.render.apply((this));
         this.listenTo(this.model, 'msg:custom', this.handleCustomMessages);
