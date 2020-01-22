@@ -335,7 +335,7 @@ var VTKView = widgets.DOMWidgetView.extend({
                 container: $(this.el).find('.vtk-content')[0],
             });
             // parent to supply?
-            this.fsRenderer.getRenderWindow().getInteractor().onLeftButtonPress(function (callData) {
+            this.fsRenderer.getRenderWindow().getInteractor().onRightButtonPress(function (callData) {
                 let r = view.fsRenderer.getRenderer();
                 if (r !== callData.pokedRenderer) {
                     return;
@@ -343,9 +343,9 @@ var VTKView = widgets.DOMWidgetView.extend({
 
                 // regular clicks happen when spinning the scene - we'll select/deselect with ctrl-click.
                 // Though one also rotates in that case, it's less common
-                if (! callData.controlKey) {
-                    return;
-                }
+                //if (! callData.controlKey) {
+                //    return;
+                //}
 
                 const pos = callData.position;
                 const point = [pos.x, pos.y, 0.0];
