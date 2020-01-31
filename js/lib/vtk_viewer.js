@@ -335,7 +335,7 @@ var VTKView = widgets.DOMWidgetView.extend({
                 container: $(this.el).find('.vtk-content')[0],
             });
             // parent to supply?
-            this.fsRenderer.getRenderWindow().getInteractor().onRightButtonPress(function (callData) {
+            this.fsRenderer.getRenderWindow().getInteractor().onLeftButtonPress(function (callData) {
                 let r = view.fsRenderer.getRenderer();
                 if (r !== callData.pokedRenderer) {
                     return;
@@ -343,9 +343,9 @@ var VTKView = widgets.DOMWidgetView.extend({
 
                 // regular clicks happen when spinning the scene - we'll select/deselect with ctrl-click.
                 // Though one also rotates in that case, it's less common
-                //if (! callData.controlKey) {
-                //    return;
-                //}
+                if (! callData.controlKey) {
+                    return;
+                }
 
                 const pos = callData.position;
                 const point = [pos.x, pos.y, 0.0];
@@ -485,16 +485,24 @@ var VTKView = widgets.DOMWidgetView.extend({
         this.removeActors();
 
         if (! this.orientationMarker) {
+            const ca = vtk.Rendering.Core.vtkAnnotatedCubeActor.newInstance();
+            vtk.Rendering.Core.vtkAnnotatedCubeActor.Presets.applyPreset('default', ca);
+            let df = ca.getDefaultStyle();
+            df.fontFamily = 'Arial';
+            df.faceRotation = 45;
+            ca.setDefaultStyle(df);
+
             this.orientationMarker = vtk.Interaction.Widgets.vtkOrientationMarkerWidget.newInstance({
-                actor: vtk.Rendering.Core.vtkAxesActor.newInstance(),
+                actor: ca,
                 interactor: this.fsRenderer.getRenderWindow().getInteractor()
             });
             this.orientationMarker.setViewportCorner(
                 vtk.Interaction.Widgets.vtkOrientationMarkerWidget.Corners.TOP_RIGHT
             );
-            this.orientationMarker.setViewportSize(0.08);
-            this.orientationMarker.setMinPixelSize(100);
-            this.orientationMarker.setMaxPixelSize(300);
+            this.orientationMarker.setViewportSize(0.05);
+            this.orientationMarker.computeViewport();
+            this.orientationMarker.setMinPixelSize(50);
+            this.orientationMarker.setMaxPixelSize(100);
             this.setMarkerVisible();
         }
 
@@ -626,7 +634,7 @@ var VTKView = widgets.DOMWidgetView.extend({
     },
 
     resetView: function() {
-        this.setCam([1, -0.4, 0], [0, 0, 1]);
+        this.setCam([1, 0, 0], [0, 0, 1]);
     },
 
     // may have to get axis orientation from data?
