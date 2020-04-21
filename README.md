@@ -18,7 +18,7 @@ To install for jupyterlab
 
 For a development installation (requires npm),
 
-    $ git clone https://github.com/radiasoft/rsjpyradia.git
+    $ git clone https://github.com/radiasoft/jupyter-rs-vtk.git
     $ cd jupyter-rs-vtk
     $ pip install -e .
     $ jupyter nbextension install --py --symlink --sys-prefix jupyter_rs_vtk

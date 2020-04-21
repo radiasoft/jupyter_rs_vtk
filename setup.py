@@ -153,7 +153,7 @@ setup_args = {
 
     'author': 'RadiaSoft LLC',
     'author_email': 'support@sirepo.com',
-    'url': 'https://github.com/radiasoft/rsjpyradia',
+    'url': 'https://github.com/radiasoft/jupyter-rs-vtk',
     'keywords': [
         'ipython',
         'jupyter',
