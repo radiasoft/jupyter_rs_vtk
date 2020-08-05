@@ -820,7 +820,13 @@ var VTKView = widgets.DOMWidgetView.extend({
         let mapper = actor.getMapper();
         //rsUtils.rsdbg('bounds', mapper.getBounds());
         // use bounds
-        mapper.setScaleFactor(8.0);
+        //mapper.setScaleFactor(8.0);
+        let b = this.fsRenderer.getRenderer().computeVisiblePropBounds();
+        let s = [Math.abs(b[1] - b[0]), Math.abs(b[3] - b[2]), Math.abs(b[5] - b[4])];
+        let mx = Math.max(...s);
+        //let mx = Math.max(s[0], s[1], s[2]);
+        mapper.setScaleFactor(0.035 * mx);
+        //rsUtils.rsdbg('prop bnds', b, mx, mx / 8.0, 0.035 * mx);
         if (vs === 'Uniform') {
             mapper.setScaleModeToScaleByConstant();
         }
