@@ -150,6 +150,15 @@ function numDataColors(data) {
     return j;
 }
 
+function vectorScaleFactor(bounds) {
+    let s = [
+        Math.abs(bounds[1] - bounds[0]),
+        Math.abs(bounds[3] - bounds[2]),
+        Math.abs(bounds[5] - bounds[4])
+    ];
+    return 0.035 * Math.max(...s);
+}
+
 // Custom Model. Custom widgets models must at least provide default values
 // for model attributes, including
 //
@@ -528,12 +537,6 @@ var VTKView = widgets.DOMWidgetView.extend({
             return;
         }
 
-        let totalBounds = [
-            Number.MAX_VALUE, -Number.MAX_VALUE,
-            Number.MAX_VALUE, -Number.MAX_VALUE,
-            Number.MAX_VALUE, -Number.MAX_VALUE
-        ];
-
         // move to test method for the user to invoke
         const useTestObjects = false;
         if (useTestObjects) {
@@ -550,8 +553,6 @@ var VTKView = widgets.DOMWidgetView.extend({
         for (let i = 0; i < data.length; ++i) {
 
             const sceneDatum = data[i];
-            const bounds = vtkUtils.objBounds(sceneDatum);
-
             // trying a separation into an actor for each data type, to better facilitate selection
             vtkUtils.GEOM_TYPES.forEach(function (t) {
                 const d = sceneDatum[t];
@@ -583,7 +584,7 @@ var VTKView = widgets.DOMWidgetView.extend({
 
                     // this scales by a constant - the default is to use scalar data
                     //TODO(mvk): set based on bounds size
-                    mapper.setScaleFactor(8.0);
+                    mapper.setScaleFactor(vectorScaleFactor(sceneData.bounds));
                     mapper.setScaleModeToScaleByConstant();
                     mapper.setColorModeToDefault();
                 }
@@ -595,12 +596,6 @@ var VTKView = widgets.DOMWidgetView.extend({
                 view.addActor(aname, gname, actor, t, PICKABLE_TYPES.indexOf(t) >= 0);
                 view.loadActorState(aname);
             });
-
-            for(let j = 0; j < 3; ++j) {
-                let k = 2 * j;
-                totalBounds[k] = Math.min(totalBounds[k], bounds[k]);
-                totalBounds[k + 1] = Math.max(totalBounds[k + 1], bounds[k + 1]);
-            }
         }
         this.setBgColor();
         this.setEdgesVisible();
@@ -820,13 +815,8 @@ var VTKView = widgets.DOMWidgetView.extend({
         let mapper = actor.getMapper();
         //rsUtils.rsdbg('bounds', mapper.getBounds());
         // use bounds
-        //mapper.setScaleFactor(8.0);
         let b = this.fsRenderer.getRenderer().computeVisiblePropBounds();
-        let s = [Math.abs(b[1] - b[0]), Math.abs(b[3] - b[2]), Math.abs(b[5] - b[4])];
-        let mx = Math.max(...s);
-        //let mx = Math.max(s[0], s[1], s[2]);
-        mapper.setScaleFactor(0.035 * mx);
-        //rsUtils.rsdbg('prop bnds', b, mx, mx / 8.0, 0.035 * mx);
+        mapper.setScaleFactor(vectorScaleFactor(b));
         if (vs === 'Uniform') {
             mapper.setScaleModeToScaleByConstant();
         }

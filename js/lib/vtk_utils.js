@@ -59,15 +59,19 @@ function objBounds(json) {
             return;
         }
         let pts = json[type].vertices;
-        for (let j = 0; j < 3; ++j) {
-            let c = pts.filter(function (p, i) {
-                return i % 3 === j;
-            });
-            mins[j] =  Math.min(mins[j], Math.min.apply(null, c));
-            maxs[j] =  Math.max(maxs[j], Math.max.apply(null, c));
+        // for performance purposes, simple loops and ifs
+        for (let i = 0; i < pts.length; i += 3) {
+            for (let j = 0; j < 3; ++j) {
+                const p = pts[i + j]
+                if (p < mins[j]) {
+                    mins[j] = p;
+                }
+                if (p > maxs[j]) {
+                    maxs[j] = p;
+                }
+            }
         }
     });
-
     return [mins[0], maxs[0], mins[1], maxs[1], mins[2], maxs[2]];
 }
 
