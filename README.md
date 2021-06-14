@@ -9,12 +9,12 @@ Installation
 To install use pip:
 
     $ pip install .
+    $ jupyter nbextension install --py --symlink --sys-prefix jupyter_rs_vtk
     $ jupyter nbextension enable --py --sys-prefix jupyter_rs_vtk
 
 To install for jupyterlab
 
-    $ cd js
-    $ jupyter labextension install .
+    $ jupyter labextension install js
 
 For a development installation (requires npm),
 
@@ -23,3 +23,4 @@ For a development installation (requires npm),
     $ pip install -e .
     $ jupyter nbextension install --py --symlink --sys-prefix jupyter_rs_vtk
     $ jupyter nbextension enable --py --sys-prefix jupyter_rs_vtk
+    $ jupyter labextension install js
