@@ -3,6 +3,8 @@ jupyter-rs-vtk
 
 VTK widget for Jupyter
 
+**NOTE**: The current build requires jupyterlab 2.1.0 and jupyterlab-server 1.2.0. 
+
 Installation
 ------------
 
