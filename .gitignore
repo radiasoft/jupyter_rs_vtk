@@ -5,6 +5,6 @@
 .ipynb_checkpoints/
 build/
 dist/
-jupyter-rs-vtk/labextension
+jupyter_rs_vtk/labextension
 node_modules/
 yarn.lock

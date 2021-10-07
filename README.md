@@ -1,4 +1,4 @@
-jupyter-rs-vtk
+jupyter_rs_vtk
 ===============================
 
 VTK widget for Jupyter
@@ -15,7 +15,7 @@ To install use pip:
 
 For a development installation (requires npm),
 
-    $ git clone https://github.com/radiasoft/jupyter-rs-vtk.git
-    $ cd jupyter-rs-vtk
+    $ git clone https://github.com/radiasoft/jupyter_rs_vtk.git
+    $ cd jupyter_rs_vtk
     $ pip install -e .
     $ jlpm install:extension

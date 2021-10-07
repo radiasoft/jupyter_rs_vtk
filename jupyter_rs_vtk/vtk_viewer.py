@@ -14,8 +14,8 @@ class VTK(ipywidgets.DOMWidget, rs_utils.RSDebugger):
     """VTK content"""
     _view_name = Unicode('VTKView').tag(sync=True)
     _model_name = Unicode('VTKModel').tag(sync=True)
-    _view_module = Unicode('jupyter-rs-vtk').tag(sync=True)
-    _model_module = Unicode('jupyter-rs-vtk').tag(sync=True)
+    _view_module = Unicode('jupyter_rs_vtk').tag(sync=True)
+    _model_module = Unicode('jupyter_rs_vtk').tag(sync=True)
     _view_module_version = Unicode('^0.0.1').tag(sync=True)
     _model_module_version = Unicode('^0.0.1').tag(sync=True)
 
@@ -66,8 +66,8 @@ class Viewer(ipywidgets.VBox, rs_utils.RSDebugger):
     """VTK viewer - includes controls to manipulate the objects"""
     _model_name = Unicode('ViewerModel').tag(sync=True)
     _view_name = Unicode('ViewerView').tag(sync=True)
-    _model_module = Unicode('jupyter-rs-vtk').tag(sync=True)
-    _view_module = Unicode('jupyter-rs-vtk').tag(sync=True)
+    _model_module = Unicode('jupyter_rs_vtk').tag(sync=True)
+    _view_module = Unicode('jupyter_rs_vtk').tag(sync=True)
     _model_module_version = Unicode('^0.0.1').tag(sync=True)
     _view_module_version = Unicode('^0.0.1').tag(sync=True)
 
@@ -278,4 +278,3 @@ class Viewer(ipywidgets.VBox, rs_utils.RSDebugger):
         super(Viewer, self).__init__(children=[
             self.content, controls_grp,
         ])
-

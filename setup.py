@@ -1,5 +1,5 @@
 """
-jupyter-rs-vtk setup
+jupyter_rs_vtk setup
 """
 import json
 from pathlib import Path
@@ -16,7 +16,7 @@ import setuptools
 HERE = Path(__file__).parent.resolve()
 
 # The name of the project
-name = "jupyter-rs-vtk"
+name = "jupyter_rs_vtk"
 
 lab_path = (HERE / name / "labextension")
 
@@ -29,7 +29,7 @@ package_data_spec = {
     name: ["*"],
 }
 
-labext_name = "jupyter-rs-vtk"
+labext_name = "jupyter_rs_vtk"
 
 data_files_spec = [
     ("share/jupyter/labextensions/%s" % labext_name, str(lab_path), "**"),
