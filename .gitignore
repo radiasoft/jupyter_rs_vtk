@@ -1,16 +1,10 @@
-yarn.lock
 *.egg-info/
-.ipynb_checkpoints/
-dist/
-build/
 *.py[cod]
-node_modules/
-
-# PyCharm
-.idea/
-
-# Compiled javascript
-jupyter_rs_vtk/static/
-
-# OS X
 .DS_Store
+.idea/
+.ipynb_checkpoints/
+build/
+dist/
+jupyter_rs_vtk/labextension
+node_modules/
+yarn.lock
