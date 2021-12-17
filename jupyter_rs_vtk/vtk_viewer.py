@@ -78,6 +78,12 @@ class Viewer(ipywidgets.VBox, rs_utils.RSDebugger):
     client_props = Dict(default_value={}).tag(sync=True)
     client_prop_map = PKDict()
 
+    def add_cut_plane(self, normal):
+        self.content.send({
+            'type': 'cutPlane',
+            'normal': normal,
+        })
+
     # add data param
     def display(self):
         return self
@@ -97,6 +103,9 @@ class Viewer(ipywidgets.VBox, rs_utils.RSDebugger):
     # several test modes?  polyData, built-in vtk sources, etc.
     def test(self):
         self.set_data(gui_utils.get_test_obj())
+
+    def _add_cut_plane(self, b):
+        self.add_cut_plane([0, 0, 1])
 
     @traitlets.default('layout')
     def _default_layout(self):
@@ -228,6 +237,17 @@ class Viewer(ipywidgets.VBox, rs_utils.RSDebugger):
             layout={'padding': '3px 0px 3px 0px'}
         )
 
+        self.add_cut_plane_btn = ipywidgets.Button(
+            description='Add Cut Plane',
+            layout={'width': 'fit-content'}
+        )
+        self.add_cut_plane_btn.on_click(self._add_cut_plane)
+
+        objects_grp = ipywidgets.HBox(
+            [self.add_cut_plane_btn],
+            layout={'padding': '3px 0px 3px 0px'}
+        )
+
         # links the values of two widgets
         ipywidgets.jslink(
             (self.bg_color_pick, 'value'),
@@ -272,9 +292,10 @@ class Viewer(ipywidgets.VBox, rs_utils.RSDebugger):
             self.obj_color_pick,
             self.poly_alpha_slider,
             self.reset_btn,
+            self.add_cut_plane_btn,
         ].extend([self.axis_btns[ax].button for ax in self.axis_btns])
 
         self.observe(self._set_client_props, names='client_props')
         super(Viewer, self).__init__(children=[
-            self.content, controls_grp,
+            self.content, controls_grp, objects_grp,
         ])
