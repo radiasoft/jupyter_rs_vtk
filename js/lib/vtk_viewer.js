@@ -1,11 +1,24 @@
-let _ = require('lodash');
-let $ = require('jquery');
-require('vtk.js');
-let controls = require('@jupyter-widgets/controls');
-let guiUtils = require('./gui_utils');
-let widgets = require('@jupyter-widgets/base');
-let rsUtils = require('./rs_utils');
-let vtkUtils = require('./vtk_utils');
+import $ from 'jquery';
+import * as guiUtils from './gui_utils.js';
+import * as rsUtils from './rs_utils.js';
+import * as vtkUtils from './vtk_utils.js';
+import { DOMWidgetModel, DOMWidgetView } from '@jupyter-widgets/base';
+import { VBoxModel, VBoxView } from '@jupyter-widgets/controls';
+
+import vtkActor from '@kitware/vtk.js/Rendering/Core/Actor';
+import vtkAnnotatedCubeActor from '@kitware/vtk.js/Rendering/Core/AnnotatedCubeActor';
+import vtkArrowSource from '@kitware/vtk.js/Filters/Sources/ArrowSource';
+import vtkCalculator from '@kitware/vtk.js/Filters/General/Calculator';
+import vtkCellPicker from '@kitware/vtk.js/Rendering/Core/CellPicker';
+import vtkDataArray from '@kitware/vtk.js/Common/Core/DataArray';
+import vtkDataSet from '@kitware/vtk.js/Common/DataModel/DataSet';
+import vtkDataSetAttributes from '@kitware/vtk.js/Common/DataModel/DataSetAttributes';
+import vtkFullScreenRenderWindow from '@kitware/vtk.js/Rendering/Misc/FullScreenRenderWindow';
+import vtkGlyph3DMapper from '@kitware/vtk.js/Rendering/Core/Glyph3DMapper';
+import vtkMapper from '@kitware/vtk.js/Rendering/Core/Mapper';
+import vtkMath from '@kitware/vtk.js/Common/Core/Math';
+import vtkOrientationMarkerWidget from '@kitware/vtk.js/Interaction/Widgets/OrientationMarkerWidget';
+import vtkPointPicker from '@kitware/vtk.js/Rendering/Core/PointPicker';
 
 const LINEAR_SCALE_ARRAY = 'linScale';
 const LOG_SCALE_ARRAY = 'logScale';
@@ -25,21 +38,21 @@ let template = `
 
 // these objects are used to set various vector properties
 let vectInArrays = [{
-    location: vtk.Common.DataModel.vtkDataSet.FieldDataTypes.COORDINATE,
+    location: vtkDataSet.FieldDataTypes.COORDINATE,
 }];
 
 // to be set by parent widget
 let vectOutArrays = [{
-        location: vtk.Common.DataModel.vtkDataSet.FieldDataTypes.POINT,
+        location: vtkDataSet.FieldDataTypes.POINT,
         name: SCALAR_ARRAY,
         dataType: 'Uint8Array',
-        attribute: vtk.Common.DataModel.vtkDataSetAttributes.AttributeTypes.SCALARS,
+        attribute: vtkDataSetAttributes.AttributeTypes.SCALARS,
         numberOfComponents: 3,
     },
 ];
 [LINEAR_SCALE_ARRAY, LOG_SCALE_ARRAY, ORIENTATION_ARRAY].forEach(function (n) {
     vectOutArrays.push({
-        location: vtk.Common.DataModel.vtkDataSet.FieldDataTypes.POINT,
+        location: vtkDataSet.FieldDataTypes.POINT,
         name: n,
         dataType: 'Float32Array',
         numberOfComponents: 3,
@@ -174,33 +187,34 @@ function vectorScaleFactor(bounds) {
 
 // When serialiazing the entire widget state for embedding, only values that
 // differ from the defaults will be specified.
-var VTKModel = widgets.DOMWidgetModel.extend({
-    defaults: _.extend(widgets.DOMWidgetModel.prototype.defaults(), {
-        _model_name : 'VTKModel',
-        _view_name : 'VTKView',
-        _model_module : 'jupyter_rs_vtk',
-        _view_module : 'jupyter_rs_vtk',
-        _model_module_version : '0.0.1',
-        _view_module_version : '0.0.1',
-    })
-});
-
+export class VTKModel extends DOMWidgetModel {
+    defaults() {
+        return {
+            ...super.defaults(),
+            _model_name : 'VTKModel',
+            _view_name : 'VTKView',
+            _model_module : 'jupyter_rs_vtk',
+            _view_module : 'jupyter_rs_vtk',
+            _model_module_version : '0.1.0',
+            _view_module_version : '0.1.0',
+        };
+    }
+}
 
 // Custom View. Renders the widget model.
-var VTKView = widgets.DOMWidgetView.extend({
-
-    actorInfo: {},
-    cPicker: null,
-    fsRenderer: null,
-    orientationMarker: null,
-    ptPicker: null,
-    selectedCell: -1,
-    selectedColor: [],
-    selectedObject: null,
-    selectedPoint: -1,
+export class VTKView extends DOMWidgetView {
+    actorInfo = {};
+    cPicker =  null;
+    fsRenderer =  null;
+    orientationMarker = null;
+    ptPicker = null;
+    selectedCell = -1;
+    selectedColor = [];
+    selectedObject = null;
+    selectedPoint = -1;
 
     // stash the actor and associated info to avoid recalculation
-    addActor: function(name, group, actor, type, pickable) {
+    addActor(name, group, actor, type, pickable) {
         if (! this.fsRenderer) {
             // exception or message?
             //rsUtils.rslog('No renderer');
@@ -246,25 +260,23 @@ var VTKView = widgets.DOMWidgetView.extend({
             this.ptPicker.addPickList(actor);
             this.cPicker.addPickList(actor);
         }
-    },
+    }
 
-    addViewPort: function() {
+    addViewPort() {
+    }
 
-    },
+    addViewPorts() {
+    }
 
-    addViewPorts: function() {
-
-    },
-
-    getActor: function(name) {
+    getActor(name) {
         return (this.getActorInfo(name) || {}).actor;
-    },
+    }
 
-    getActorInfo: function(name) {
+    getActorInfo(name) {
         return this.actorInfo[name];
-    },
+    }
 
-    getActorInfoOfType: function(typeName) {
+    getActorInfoOfType(typeName) {
         const view = this;
         return Object.keys(this.actorInfo)
             .filter(function (name) {
@@ -273,23 +285,23 @@ var VTKView = widgets.DOMWidgetView.extend({
             .map(function (name) {
                 return view.getActorInfo(name);
             })
-    },
+    }
 
-    getActorsOfType: function(typeName) {
+    getActorsOfType(typeName) {
         return this.getActorInfoOfType(typeName).map(function (info) {
             return info.actor;
         });
-    },
+    }
 
-    getInfoForActor: function(actor) {
+    getInfoForActor(actor) {
         for (let n in this.actorInfo) {
             if (this.getActor(n) === actor) {
                 return this.getActorInfo(n);
             }
         }
-    },
+    }
 
-    handleCustomMessages: function(msg) {
+    handleCustomMessages(msg) {
         if (msg.type === 'axis') {
             this.setAxis(msg.axis, msg.dir);
         }
@@ -304,44 +316,49 @@ var VTKView = widgets.DOMWidgetView.extend({
 
         if (msg.type === 'reset') {
             this.resetView();
+            this.refresh();
         }
 
-    },
+    }
 
-    loadActorState: function(name) {
+    loadActorState(name) {
         const s = this.model.get('actor_state')[name];
         if (! s) {
             return;
         }
         const info = this.getInfoForActor(this.getActor(name));
         this.fsRenderer.getRenderWindow().render();
-    },
+    }
 
-    loadCam: function() {
+    loadCam() {
         const cs = this.model.get('cam_state');
         if (! cs || $.isEmptyObject(cs)) {
             this.resetView();
             return;
         }
         this.setCam(cs.pos, cs.vu);
-    },
+    }
 
     // override
-    processPickedObject: function(o) {},
+    processPickedObject(o) {}
 
     // override
-    processPickedVector: function(p, v) {},
+    processPickedVector(p, v) {}
 
-    refresh: function(o) {
-
-        //rsUtils.rsdbg('vtk refresh');
+    refresh(o) {
         const view = this;
 
         this.selectedObject = null;
         if (! this.fsRenderer) {
-            this.fsRenderer = vtk.Rendering.Misc.vtkFullScreenRenderWindow.newInstance({
-                container: $(this.el).find('.vtk-content')[0],
-            });
+            try {
+                this.fsRenderer = vtkFullScreenRenderWindow.newInstance({
+                    container: $(this.el).find('.vtk-content')[0],
+                });
+            }
+            catch (error) {
+                rsUtils.rsdbg('caught error:', error);
+                throw error;
+            }
             // parent to supply?
             this.fsRenderer.getRenderWindow().getInteractor().onLeftButtonPress(function (callData) {
                 let r = view.fsRenderer.getRenderer();
@@ -478,7 +495,7 @@ var VTKView = widgets.DOMWidgetView.extend({
                     return 255 - c;
                 });
 
-                let sch = vtk.Common.Core.vtkMath.floatRGB2HexCode(sc);
+                let sch = vtkMath.floatRGB2HexCode(sc);
                 view.model.set('selected_obj_color', view.selectedObject ? sch : '#ffffff');
                 for (let name in view.actorInfo) {
                     let a = view.getActor(name);
@@ -487,25 +504,24 @@ var VTKView = widgets.DOMWidgetView.extend({
                 view.processPickedObject(view.getInfoForActor(view.selectedObject));
 
             });
-
         }
 
         this.removeActors();
 
         if (! this.orientationMarker) {
-            const ca = vtk.Rendering.Core.vtkAnnotatedCubeActor.newInstance();
-            vtk.Rendering.Core.vtkAnnotatedCubeActor.Presets.applyPreset('default', ca);
+            const ca = vtkAnnotatedCubeActor.newInstance();
+            vtkAnnotatedCubeActor.Presets.applyPreset('default', ca);
             let df = ca.getDefaultStyle();
             df.fontFamily = 'Arial';
             df.faceRotation = 45;
             ca.setDefaultStyle(df);
 
-            this.orientationMarker = vtk.Interaction.Widgets.vtkOrientationMarkerWidget.newInstance({
+            this.orientationMarker = vtkOrientationMarkerWidget.newInstance({
                 actor: ca,
                 interactor: this.fsRenderer.getRenderWindow().getInteractor()
             });
             this.orientationMarker.setViewportCorner(
-                vtk.Interaction.Widgets.vtkOrientationMarkerWidget.Corners.TOP_RIGHT
+                vtkOrientationMarkerWidget.Corners.TOP_RIGHT
             );
             this.orientationMarker.setViewportSize(0.05);
             this.orientationMarker.computeViewport();
@@ -516,13 +532,13 @@ var VTKView = widgets.DOMWidgetView.extend({
 
         // need point picker for vectors and cell picker for polys
         if (! this.ptPicker) {
-            this.ptPicker = vtk.Rendering.Core.vtkPointPicker.newInstance();
+            this.ptPicker = vtkPointPicker.newInstance();
             this.ptPicker.setPickFromList(true);
             this.ptPicker.initializePickList();
         }
 
         if (! this.cPicker) {
-            this.cPicker = vtk.Rendering.Core.vtkCellPicker.newInstance();
+            this.cPicker = vtkCellPicker.newInstance();
             //this.cPicker.setTolerance(0);
             //this.cPicker.setTolerance(10.0);
             this.cPicker.setPickFromList(false);
@@ -530,6 +546,7 @@ var VTKView = widgets.DOMWidgetView.extend({
         }
 
         let sceneData = this.model.get('model_data');
+        rsUtils.rslog('sceneData:', sceneData);
         if ($.isEmptyObject(sceneData)) {
             rsUtils.rslog('No data');
             this.fsRenderer.getRenderWindow().render();
@@ -548,7 +565,6 @@ var VTKView = widgets.DOMWidgetView.extend({
         const name = sceneData.name;
         const id = sceneData.id;
         let data = sceneData.data;
-        //rsUtils.rsdbg('got data', data, 'for', name, id);
         for (let i = 0; i < data.length; ++i) {
 
             const sceneDatum = data[i];
@@ -562,22 +578,22 @@ var VTKView = widgets.DOMWidgetView.extend({
                 const pdti = vtkUtils.objToPolyData(sceneDatum, [t]);
                 const pData = pdti.data;
                 let mapper = null;
-                const actor = vtk.Rendering.Core.vtkActor.newInstance();
+                const actor = vtkActor.newInstance();
                 if (vtkUtils.GEOM_OBJ_TYPES.indexOf(t) >= 0) {
-                    mapper = vtk.Rendering.Core.vtkMapper.newInstance({
+                    mapper = vtkMapper.newInstance({
                         static: true
                     });
                     mapper.setInputData(pData);
                 }
                 else {
-                    let vectorCalc = vtk.Filters.General.vtkCalculator.newInstance();
+                    let vectorCalc = vtkCalculator.newInstance();
                     vectorCalc.setFormula(getVectFormula(d, view.model.get('vector_color_map_name')));
                     vectorCalc.setInputData(pData);
 
-                    mapper = vtk.Rendering.Core.vtkGlyph3DMapper.newInstance();
+                    mapper = vtkGlyph3DMapper.newInstance();
                     mapper.setInputConnection(vectorCalc.getOutputPort(), 0);
 
-                    let s = vtk.Filters.Sources.vtkArrowSource.newInstance();
+                    let s = vtkArrowSource.newInstance();
                     mapper.setInputConnection(s.getOutputPort(), 1);
                     mapper.setOrientationArray(ORIENTATION_ARRAY);
 
@@ -600,9 +616,9 @@ var VTKView = widgets.DOMWidgetView.extend({
         this.setEdgesVisible();
         this.setPolyAlpha();
         this.loadCam();
-    },
+    }
 
-    removeActors: function() {
+    removeActors() {
         const view = this;
         let r = this.fsRenderer.getRenderer();
         r.getActors().forEach(function(a) {
@@ -611,10 +627,9 @@ var VTKView = widgets.DOMWidgetView.extend({
             view.cPicker.deletePickList(a);
         });
         this.actorInfo = {};
-    },
+    }
 
-    render: function() {
-        //rsUtils.rsdbg('vtk render model', this.model);
+    render() {
         this.model.on('change:bg_color', this.setBgColor, this);
         this.model.on('change:selected_obj_color', this.setSelectedObjColor, this);
         this.model.on('change:poly_alpha', this.setPolyAlpha, this);
@@ -625,28 +640,28 @@ var VTKView = widgets.DOMWidgetView.extend({
         $(this.el).append($(template));
         this.setTitle();
         this.listenTo(this.model, 'msg:custom', this.handleCustomMessages);
-    },
+    }
 
-    resetView: function() {
+    resetView() {
         this.setCam([1, 0, 0], [0, 0, 1]);
-    },
+    }
 
     // may have to get axis orientation from data?
-    setAxis: function(axis, dir) {
+    setAxis(axis, dir) {
         let camPos = axis === 'X' ? [dir, 0, 0] : (axis === 'Y' ? [0, dir, 0] : [0, 0, dir] );
         let camViewUp = axis === 'Z' ? [0, 1, 0] : [0, 0, 1];
         this.setCam(camPos, camViewUp);
-    },
+    }
 
-    setBgColor: function() {
+    setBgColor() {
         if (! this.fsRenderer) {
             return;
         }
-        this.fsRenderer.setBackground(vtk.Common.Core.vtkMath.hex2float(this.model.get('bg_color')));
+        this.fsRenderer.setBackground(vtkMath.hex2float(this.model.get('bg_color')));
         this.fsRenderer.getRenderWindow().render();
-    },
+    }
 
-    setCam: function(pos, vu) {
+    setCam(pos, vu) {
         if (! this.fsRenderer) {
             return;
         }
@@ -662,10 +677,9 @@ var VTKView = widgets.DOMWidgetView.extend({
         r.resetCamera();
         this.orientationMarker.updateMarkerOrientation();
         this.fsRenderer.getRenderWindow().render();
-    },
+    }
 
-    setColor: function(info, type, color, alpha=255) {
-        //rsUtils.rsdbg(info.name, 'setColor', color, alpha);
+    setColor(info, type, color, alpha=255) {
         const s = info.scalars;
         if (! s) {
             //rsUtils.rsdbg(info.name, 'setColor NO SCALARS');
@@ -695,15 +709,14 @@ var VTKView = widgets.DOMWidgetView.extend({
         this.model.set('actor_state', states);
 
         info.pData.modified();
-    },
+    }
 
-    setData: function(d) {
-        //rsUtils.rsdbg('vtk setting data');
+    setData(d) {
         this.model.set('model_data', d);
         this.refresh();
-    },
+    }
 
-    setEdgeColor: function(actor, color) {
+    setEdgeColor(actor, color) {
         if (! actor ) {
             return;
         }
@@ -714,9 +727,9 @@ var VTKView = widgets.DOMWidgetView.extend({
         actor.getProperty().setEdgeColor(color[0], color[1], color[2]);
         this.setColor(info, vtkUtils.GEOM_TYPE_LINES, color);
         //this.fsRenderer.getRenderWindow().render();
-    },
+    }
 
-    setEdgesVisible: function() {
+    setEdgesVisible() {
         if (! this.fsRenderer) {
             return;
         }
@@ -731,17 +744,17 @@ var VTKView = widgets.DOMWidgetView.extend({
             this.setColor(info, vtkUtils.GEOM_TYPE_LINES, null, 255 * doShow);
         }
         this.fsRenderer.getRenderWindow().render();
-    },
+    }
 
-    setMarkerVisible: function() {
+    setMarkerVisible() {
         if (! this.fsRenderer) {
             return;
         }
         this.orientationMarker.setEnabled(this.model.get('show_marker'));
         this.fsRenderer.getRenderWindow().render();
-    },
+    }
 
-    setPolyAlpha: function() {
+    setPolyAlpha() {
         if (! this.fsRenderer) {
             return;
         }
@@ -756,10 +769,10 @@ var VTKView = widgets.DOMWidgetView.extend({
             this.setColor(info, vtkUtils.GEOM_TYPE_POLYS, null, Math.floor(255 * alpha));
         }
         this.fsRenderer.getRenderWindow().render();
-    },
+    }
 
     // need to allow setting color for entire actor, single poly, or 3d cell
-    setSelectedObjColor: function() {
+    setSelectedObjColor() {
         if (! this.fsRenderer) {
             return;
         }
@@ -767,7 +780,7 @@ var VTKView = widgets.DOMWidgetView.extend({
             return;
         }
         let info = this.getInfoForActor(this.selectedObject);
-        let newColor = vtk.Common.Core.vtkMath.hex2float(this.model.get('selected_obj_color'));
+        let newColor = vtkMath.hex2float(this.model.get('selected_obj_color'));
         if (! info.scalars) {
             this.selectedObject.getProperty().setColor(newColor[0], newColor[1], newColor[2]);
             return;
@@ -778,13 +791,13 @@ var VTKView = widgets.DOMWidgetView.extend({
         });
         this.setColor(info, vtkUtils.GEOM_TYPE_POLYS, nc);
         this.fsRenderer.getRenderWindow().render();
-    },
+    }
 
-    setTitle: function() {
+    setTitle() {
         $(this.el).find('.viewer-title').text(this.model.get('title'));
-    },
+    }
 
-    setVectorColorMap: function() {
+    setVectorColorMap() {
         if (! this.fsRenderer) {
             return;
         }
@@ -801,9 +814,9 @@ var VTKView = widgets.DOMWidgetView.extend({
         actor.getMapper().getInputConnection(0).filter
             .setFormula(getVectFormula(this.model.get('model_data').data[0].vectors, mapName));
         this.fsRenderer.getRenderWindow().render();
-    },
+    }
 
-    setVectorScaling: function(vs) {
+    setVectorScaling(vs) {
         if (! this.fsRenderer) {
             return;
         }
@@ -812,7 +825,6 @@ var VTKView = widgets.DOMWidgetView.extend({
             return;
         }
         let mapper = actor.getMapper();
-        //rsUtils.rsdbg('bounds', mapper.getBounds());
         // use bounds
         let b = this.fsRenderer.getRenderer().computeVisiblePropBounds();
         mapper.setScaleFactor(vectorScaleFactor(b));
@@ -828,57 +840,52 @@ var VTKView = widgets.DOMWidgetView.extend({
             mapper.setScaleModeToScaleByComponents();
         }
         this.fsRenderer.getRenderWindow().render();
-    },
+    }
 
-    select: function(selector) {
+    select(selector) {
         return $(this.el).find(selector);
-    },
+    }
 
-    sharesGroup: function(actor1, actor2) {
+    sharesGroup(actor1, actor2) {
         if (! actor1 || ! actor2) {
             return false;
         }
         return this.getInfoForActor(actor1).group === this.getInfoForActor(actor2).group;
-    },
+    }
 
-});
+}
 
-var ViewerModel = controls.VBoxModel.extend({
+export class ViewerModel extends VBoxModel {
+    defaults() {
+        return {
+            ...super.defaults(),
+            _model_name: 'ViewerModel',
+            _view_name: 'ViewerView',
+            _model_module: 'jupyter_rs_vtk',
+            _view_module: 'jupyter_rs_vtk',
+            _model_module_version: '0.1.0',
+            _view_module_version: '0.1.0',
+        };
+    }
+}
 
-    defaults: _.extend(controls.VBoxModel.prototype.defaults(), {
-        _model_name: 'ViewerModel',
-        _view_name: 'ViewerView',
-        _model_module: 'jupyter_rs_vtk',
-        _view_module: 'jupyter_rs_vtk',
-        _model_module_version: '0.0.1',
-        _view_module_version: '0.0.1',
-    }),
-}, {});
+export class ViewerView extends VBoxView {
 
-var ViewerView = controls.VBoxView.extend({
-
-    handleCustomMessages: function(msg) {
+    handleCustomMessages(msg) {
         if (msg.type === 'debug') {
             rsUtils.rsdbg(msg.msg);
         }
-    },
+    }
 
-    handleMessage: function(msg, d) {
+    handleMessage(msg, d) {
         rsUtils.rsdbg('msg', msg, 'data', d);
-    },
+    }
 
-    render: function() {
-        //rsUtils.rsdbg('viewer render');
+    render() {
         // this is effectively "super.render()" - must invoke to get all children rendered properly
-        controls.VBoxView.prototype.render.apply((this));
+        //controls.VBoxView.prototype.render.apply((this));
+        super.render()
         this.listenTo(this.model, 'msg:custom', this.handleCustomMessages);
         //this.listenTo(this.model, 'all', this.handleMessage);
     }
-});
-
-module.exports = {
-    ViewerModel: ViewerModel,
-    ViewerView: ViewerView,
-    VTKModel: VTKModel,
-    VTKView: VTKView
-};
+}

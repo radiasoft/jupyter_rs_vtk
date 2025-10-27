@@ -1,4 +1,4 @@
-let rsUtils = require('./rs_utils');
+import * as rsUtils from './rs_utils.js';
 
 const COLOR_MAP = {
     afmhot:
@@ -92,10 +92,9 @@ function colorsFromString(s) {
 
 // returns either black or white depending on the background color
 // there are more complex formulas if needed
-function fgColorForBG(bgColor, format) {
+export function fgColorForBG(bgColor, format) {
     // assume single integer to start
     const bg = rgbFromColor(bgColor, 1.0);
-    rsUtils.rsdbg('fg for bg', bgColor, bg);
     let fg = bg[0] * 0.299 + bg[1] * 0.587 + bg[2] * 0.114 > 186 ? 0 : 16777215;
     return formatColors([fg], format)[0];
 }
@@ -127,7 +126,7 @@ function formatColors(colors, format) {
 
 // interpolate each component to num_colors if the color map has fewer values
 //TODO(mvk): interpolate better
-function getColorMap(name, numColors, format) {
+export function getColorMap(name, numColors, format) {
     if (! numColors) {
         numColors = 256;
     }
@@ -149,11 +148,11 @@ function getColorMap(name, numColors, format) {
     return formatColors(res, format);
 }
 
-function getColorMaps() {
+export function getColorMaps() {
     return Object.keys(COLOR_MAP);
 }
 
-function rgbFromColor(c, scale)  {
+export function rgbFromColor(c, scale)  {
     if (! scale) {
         scale = 256.0;
     }
@@ -162,10 +161,3 @@ function rgbFromColor(c, scale)  {
     let r = ((c - b - 256 * g) / (256 * 256)) / scale;
     return [r, g, b];
 }
-
-module.exports = {
-    fgColorForBG: fgColorForBG,
-    getColorMap: getColorMap,
-    getColorMaps: getColorMaps,
-    rgbFromColor: rgbFromColor,
-};

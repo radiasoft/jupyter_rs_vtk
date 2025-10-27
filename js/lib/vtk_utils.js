@@ -1,14 +1,22 @@
-let _ = require('lodash');
-let $ = require('jquery');
-require('vtk.js');
 
-let rsUtils = require('./rs_utils');
 
-const GEOM_TYPE_LINES = 'lines';
-const GEOM_TYPE_POLYS = 'polygons';
-const GEOM_TYPE_VECTS = 'vectors';
-const GEOM_OBJ_TYPES = [GEOM_TYPE_LINES, GEOM_TYPE_POLYS];
-const GEOM_TYPES = [GEOM_TYPE_LINES, GEOM_TYPE_POLYS, GEOM_TYPE_VECTS];
+// Load the rendering pieces we want to use (for both WebGL and WebGPU)
+import '@kitware/vtk.js/Rendering/Profiles/Geometry';
+
+import vtkActor from '@kitware/vtk.js/Rendering/Core/Actor';
+import vtkCubeSource from '@kitware/vtk.js/Filters/Sources/CubeSource';
+import vtkCylinderSource from '@kitware/vtk.js/Filters/Sources/CylinderSource';
+import vtkDataArray from '@kitware/vtk.js/Common/Core/DataArray';
+import vtkMapper from '@kitware/vtk.js/Rendering/Core/Mapper';
+import vtkPolyData from '@kitware/vtk.js/Common/DataModel/PolyData';
+
+import * as rsUtils from './rs_utils';
+
+export const GEOM_TYPE_LINES = 'lines';
+export const GEOM_TYPE_POLYS = 'polygons';
+export const GEOM_TYPE_VECTS = 'vectors';
+export const GEOM_OBJ_TYPES = [GEOM_TYPE_LINES, GEOM_TYPE_POLYS];
+export const GEOM_TYPES = [GEOM_TYPE_LINES, GEOM_TYPE_POLYS, GEOM_TYPE_VECTS];
 
 function pickPoint(customFn) {
 
@@ -16,16 +24,16 @@ function pickPoint(customFn) {
     customFn();
 }
 
-function getTestBox() {
-    let s = vtk.Filters.Sources.vtkCubeSource.newInstance({
+export function getTestBox() {
+    let s = vtkCubeSource.newInstance({
         xLength: 20, yLength: 20, zLength: 20,
         center: [0, 0, 0],
     });
-    let m = vtk.Rendering.Core.vtkMapper.newInstance({
+    let m = vtkMapper.newInstance({
         static: true,
     });
     m.setInputConnection(s.getOutputPort());
-    let a = vtk.Rendering.Core.vtkActor.newInstance({
+    let a = vtkActor.newInstance({
         mapper: m,
     });
     a.getProperty().setColor(0, 1, 0);
@@ -33,15 +41,15 @@ function getTestBox() {
     return a;
 }
 
-function getTestCylinder() {
-    let s = vtk.Filters.Sources.vtkCylinderSource.newInstance({
+export function getTestCylinder() {
+    let s = vtkCylinderSource.newInstance({
         radius: 5, height: 30, center: [20, 0, 0]
     });
-    let m = vtk.Rendering.Core.vtkMapper.newInstance({
+    let m = vtkMapper.newInstance({
         static: true,
     });
     m.setInputConnection(s.getOutputPort());
-    let a = vtk.Rendering.Core.vtkActor.newInstance({
+    let a = vtkActor.newInstance({
         mapper: m
     });
     a.getProperty().setColor(1, 0, 0);
@@ -49,7 +57,7 @@ function getTestCylinder() {
     return a;
 }
 
-function objBounds(json) {
+export function objBounds(json) {
 
     let mins = [Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE];
     let maxs = [-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE];
@@ -75,7 +83,7 @@ function objBounds(json) {
     return [mins[0], maxs[0], mins[1], maxs[1], mins[2], maxs[2]];
 }
 
-function objToPolyData(json, includeTypes) {
+export function objToPolyData(json, includeTypes) {
     let colors = [];
     let points = [];
     let tData = {};
@@ -129,7 +137,7 @@ function objToPolyData(json, includeTypes) {
 
     points = new window.Float32Array(points);
 
-    let pd = vtk.Common.DataModel.vtkPolyData.newInstance();
+    let pd = vtkPolyData.newInstance();
     pd.getPoints().setData(points, 3);
 
     if (tData.lines) {
@@ -139,10 +147,10 @@ function objToPolyData(json, includeTypes) {
         pd.getPolys().setData(tData.polygons, 1);
     }
 
-    pd.getCellData().setScalars(vtk.Common.Core.vtkDataArray.newInstance({
+    pd.getCellData().setScalars(vtkDataArray.newInstance({
         numberOfComponents: 4,
         values: colors,
-        dataType: vtk.Common.Core.vtkDataArray.VtkDataTypes.UNSIGNED_CHAR
+        dataType: vtkDataArray.VtkDataTypes.UNSIGNED_CHAR
     }));
 
     pd.buildCells();
@@ -152,19 +160,7 @@ function objToPolyData(json, includeTypes) {
 
 function vectorsToPolyData(json) {
     let points = new window.Float32Array(json.vectors.vertices);
-    let pd = vtk.Common.DataModel.vtkPolyData.newInstance();
+    let pd = vtkPolyData.newInstance();
     pd.getPoints().setData(points, 3);
     return pd;
 }
-
-module.exports = {
-    GEOM_TYPE_LINES: GEOM_TYPE_LINES,
-    GEOM_TYPE_POLYS: GEOM_TYPE_POLYS,
-    GEOM_TYPE_VECTS: GEOM_TYPE_VECTS,
-    GEOM_OBJ_TYPES: GEOM_OBJ_TYPES,
-    GEOM_TYPES: GEOM_TYPES,
-    getTestBox: getTestBox,
-    getTestCylinder: getTestCylinder,
-    objBounds: objBounds,
-    objToPolyData: objToPolyData,
-};
