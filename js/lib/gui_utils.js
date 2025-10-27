@@ -95,7 +95,6 @@ function colorsFromString(s) {
 export function fgColorForBG(bgColor, format) {
     // assume single integer to start
     const bg = rgbFromColor(bgColor, 1.0);
-    rsUtils.rsdbg('fg for bg', bgColor, bg);
     let fg = bg[0] * 0.299 + bg[1] * 0.587 + bg[2] * 0.114 > 186 ? 0 : 16777215;
     return formatColors([fg], format)[0];
 }

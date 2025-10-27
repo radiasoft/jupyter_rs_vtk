@@ -225,7 +225,6 @@ export class VTKView extends DOMWidgetView {
             throw new Error('Actor ' + name + ' has no mapper or data');
         }
 
-        rsUtils.rsdbg('addActor:', name, actor);
         const pData = actor.getMapper().getInputData();
 
         const info = {
@@ -256,9 +255,7 @@ export class VTKView extends DOMWidgetView {
         }
         this.model.set('actor_state', s);
 
-        rsUtils.rsdbg('adding Actor:', actor);
         this.fsRenderer.getRenderer().addActor(actor);
-        rsUtils.rsdbg('done adding Actor');
         if (pickable) {
             this.ptPicker.addPickList(actor);
             this.cPicker.addPickList(actor);
@@ -305,8 +302,6 @@ export class VTKView extends DOMWidgetView {
     }
 
     handleCustomMessages(msg) {
-        rsUtils.rsdbg("custom message:", msg);
-
         if (msg.type === 'axis') {
             this.setAxis(msg.axis, msg.dir);
         }
@@ -351,15 +346,10 @@ export class VTKView extends DOMWidgetView {
     processPickedVector(p, v) {}
 
     refresh(o) {
-
-        rsUtils.rsdbg('vtk refresh, model:', this.model);
-        rsUtils.rsdbg('vtk refresh, model.model_data:', this.model.get('model_data'));
         const view = this;
 
         this.selectedObject = null;
         if (! this.fsRenderer) {
-            rsUtils.rsdbg('renderer container:', $(this.el).find('.vtk-content')[0]);
-
             try {
                 this.fsRenderer = vtkFullScreenRenderWindow.newInstance({
                     container: $(this.el).find('.vtk-content')[0],
@@ -369,7 +359,6 @@ export class VTKView extends DOMWidgetView {
                 rsUtils.rsdbg('caught error:', error);
                 throw error;
             }
-            rsUtils.rsdbg('created instance')
             // parent to supply?
             this.fsRenderer.getRenderWindow().getInteractor().onLeftButtonPress(function (callData) {
                 let r = view.fsRenderer.getRenderer();
@@ -515,14 +504,11 @@ export class VTKView extends DOMWidgetView {
                 view.processPickedObject(view.getInfoForActor(view.selectedObject));
 
             });
-            rsUtils.rsdbg('done init renderer');
         }
 
-        rsUtils.rsdbg('remove actors');
         this.removeActors();
 
         if (! this.orientationMarker) {
-            rsUtils.rsdbg('create orientation marker');
             const ca = vtkAnnotatedCubeActor.newInstance();
             vtkAnnotatedCubeActor.Presets.applyPreset('default', ca);
             let df = ca.getDefaultStyle();
@@ -546,14 +532,12 @@ export class VTKView extends DOMWidgetView {
 
         // need point picker for vectors and cell picker for polys
         if (! this.ptPicker) {
-            rsUtils.rsdbg('create ptpicker');
             this.ptPicker = vtkPointPicker.newInstance();
             this.ptPicker.setPickFromList(true);
             this.ptPicker.initializePickList();
         }
 
         if (! this.cPicker) {
-            rsUtils.rsdbg('create cpicker');
             this.cPicker = vtkCellPicker.newInstance();
             //this.cPicker.setTolerance(0);
             //this.cPicker.setTolerance(10.0);
@@ -581,7 +565,6 @@ export class VTKView extends DOMWidgetView {
         const name = sceneData.name;
         const id = sceneData.id;
         let data = sceneData.data;
-        rsUtils.rsdbg('got data', data, 'for', name, id);
         for (let i = 0; i < data.length; ++i) {
 
             const sceneDatum = data[i];
@@ -633,7 +616,6 @@ export class VTKView extends DOMWidgetView {
         this.setEdgesVisible();
         this.setPolyAlpha();
         this.loadCam();
-        rsUtils.rsdbg('done refresh()');
     }
 
     removeActors() {
@@ -648,7 +630,6 @@ export class VTKView extends DOMWidgetView {
     }
 
     render() {
-        rsUtils.rsdbg('vtk render model', this.model);
         this.model.on('change:bg_color', this.setBgColor, this);
         this.model.on('change:selected_obj_color', this.setSelectedObjColor, this);
         this.model.on('change:poly_alpha', this.setPolyAlpha, this);
@@ -699,7 +680,6 @@ export class VTKView extends DOMWidgetView {
     }
 
     setColor(info, type, color, alpha=255) {
-        rsUtils.rsdbg(info.name, 'setColor', color, alpha);
         const s = info.scalars;
         if (! s) {
             //rsUtils.rsdbg(info.name, 'setColor NO SCALARS');
@@ -732,7 +712,6 @@ export class VTKView extends DOMWidgetView {
     }
 
     setData(d) {
-        rsUtils.rsdbg('vtk setting data');
         this.model.set('model_data', d);
         this.refresh();
     }
@@ -846,7 +825,6 @@ export class VTKView extends DOMWidgetView {
             return;
         }
         let mapper = actor.getMapper();
-        rsUtils.rsdbg('bounds', mapper.getBounds());
         // use bounds
         let b = this.fsRenderer.getRenderer().computeVisiblePropBounds();
         mapper.setScaleFactor(vectorScaleFactor(b));
@@ -904,7 +882,6 @@ export class ViewerView extends VBoxView {
     }
 
     render() {
-        rsUtils.rsdbg('viewer render');
         // this is effectively "super.render()" - must invoke to get all children rendered properly
         //controls.VBoxView.prototype.render.apply((this));
         super.render()
@@ -912,10 +889,3 @@ export class ViewerView extends VBoxView {
         //this.listenTo(this.model, 'all', this.handleMessage);
     }
 }
-
-// module.exports = {
-//     ViewerModel: ViewerModel,
-//     ViewerView: ViewerView,
-//     VTKModel: VTKModel,
-//     VTKView: VTKView
-// };
