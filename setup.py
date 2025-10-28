@@ -12,7 +12,7 @@ HERE = Path(__file__).parent.resolve()
 JS_DIR = HERE / "js"
 
 # Representative files that should exist after a successful build
-jstargets = [HERE / "jupyter_rs_vtk" / "labextensions" / "package.json"]
+jstargets = [HERE / "jupyter_rs_vtk" / "labextension" / "package.json"]
 
 data_files_spec = [
     ("share/jupyter/labextensions/jupyter_rs_vtk", "jupyter_rs_vtk/labextension", "**"),
