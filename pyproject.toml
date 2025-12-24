@@ -24,5 +24,3 @@ dependencies = ["jupyterlab>=4"]  # optional, only if you need it at build-time
 npm = ["jlpm"]
 path = "js"
 build_cmd = "build:prod"
-# and ensure something exists post-build, like:
-# ensured-targets = ["jupyter_rs_vtk/labextension/package.json"]
