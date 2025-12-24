@@ -5,9 +5,7 @@ build/
 *.py[cod]
 node_modules/
 js/yarn.lock
-
-# Compiled javascript
-jupyter_rs_vtk/labextension/
+js/.yarn
 
 # OS X
 .DS_Store
