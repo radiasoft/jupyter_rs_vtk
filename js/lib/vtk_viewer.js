@@ -345,7 +345,7 @@ export class VTKView extends DOMWidgetView {
     // override
     processPickedVector(p, v) {}
 
-    refresh(o) {
+    refresh() {
         const view = this;
 
         this.selectedObject = null;
@@ -640,6 +640,7 @@ export class VTKView extends DOMWidgetView {
         $(this.el).append($(template));
         this.setTitle();
         this.listenTo(this.model, 'msg:custom', this.handleCustomMessages);
+        setTimeout(() => this.refresh(), 1000);
     }
 
     resetView() {

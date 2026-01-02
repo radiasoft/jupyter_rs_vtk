@@ -46,15 +46,10 @@ class VTK(ipywidgets.DOMWidget):
     def _default_layout(self):
         return ipywidgets.Layout(width="50%", min_width="25%", margin="auto")
 
-    def _vtk_displayed(self, o):
-        # self.rsdbg("VTK READY")
-        pass
-
     def __init__(self, title="", bg_color="#ffffff", data=None):
         self.model_data = {} if data is None else data
         self.title = title
         self.bg_color = bg_color
-        self.on_displayed(self._vtk_displayed)
         # super(VTK, self).__init__()
         super().__init__()
 
@@ -153,13 +148,6 @@ class Viewer(ipywidgets.VBox):
             None if self._has_data_type(gui_utils.GEOM_TYPE_POLYS) else "none"
         )
 
-    def _viewer_displayed(self, o):
-        # if we have data, this will trigger the refresh on the front end
-        # but we need the widget to be ready first
-        # self.rsdbg("VIEWER ready data {}".format(self.model_data))
-        # self.rsdbg("VIEWER ready")
-        self.set_data(self.model_data)
-
     def __init__(self, data=None):
         if data is None:
             data = {}
@@ -252,8 +240,6 @@ class Viewer(ipywidgets.VBox):
             [view_cam_grp, view_props_grp], layout={"padding": "8px 4px 8px 4px"}
         )
 
-        self.on_displayed(self._viewer_displayed)
-
         # for enabling/disabling as a whole
         self.controls = [
             self.bg_color_pick,
@@ -263,6 +249,7 @@ class Viewer(ipywidgets.VBox):
         ].extend([self.axis_btns[ax].button for ax in self.axis_btns])
 
         self.observe(self._set_client_props, names="client_props")
+        self.set_data(self.model_data)
         super(Viewer, self).__init__(
             children=[
                 self.content,
