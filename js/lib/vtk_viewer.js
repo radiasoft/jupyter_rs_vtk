@@ -195,8 +195,8 @@ export class VTKModel extends DOMWidgetModel {
             _view_name : 'VTKView',
             _model_module : 'jupyter_rs_vtk',
             _view_module : 'jupyter_rs_vtk',
-            _model_module_version : '0.1.0',
-            _view_module_version : '0.1.0',
+            _model_module_version : '0.2.0',
+            _view_module_version : '0.2.0',
         };
     }
 }
@@ -864,8 +864,8 @@ export class ViewerModel extends VBoxModel {
             _view_name: 'ViewerView',
             _model_module: 'jupyter_rs_vtk',
             _view_module: 'jupyter_rs_vtk',
-            _model_module_version: '0.1.0',
-            _view_module_version: '0.1.0',
+            _model_module_version: '0.2.0',
+            _view_module_version: '0.2.0',
         };
     }
 }
